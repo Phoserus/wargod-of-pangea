@@ -1,11 +1,15 @@
 import React from "react";
 import type { TargetShotState } from "../core/puzzles/targetShot";
 import type { PuzzleRun } from "../usePuzzleRun";
+import { sfx } from "../core/audio";
+import { useOnChange } from "../useOnChange";
 
 export function TargetShotView({ state, send }: PuzzleRun): React.JSX.Element {
   const s = state as TargetShotState;
   const over = s.status !== "playing";
   const size = s.cfg.radius * 2;
+  useOnChange(s.hits, () => sfx("hit"));
+  useOnChange(s.misses, () => sfx("miss"));
 
   const onArenaClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -17,7 +21,7 @@ export function TargetShotView({ state, send }: PuzzleRun): React.JSX.Element {
   };
 
   return (
-    <div>
+    <div className="puzzle-surface">
       <p aria-live="polite">
         Hits {s.hits}/{s.cfg.requiredHits} · Misses {s.misses}/{s.cfg.missLimit}
         {s.lastEvent === "decoy" ? " · That was a decoy!" : ""}
@@ -32,8 +36,9 @@ export function TargetShotView({ state, send }: PuzzleRun): React.JSX.Element {
           position: "relative",
           width: "min(100%, 420px)",
           aspectRatio: "1",
-          background: "#1f2a33",
-          border: "1px solid #777",
+          background: "var(--puzzle-tile-alt)",
+          border: "3px solid var(--puzzle-ink)",
+          borderRadius: 18,
           cursor: over ? "default" : "crosshair",
         }}
       >
@@ -54,8 +59,8 @@ export function TargetShotView({ state, send }: PuzzleRun): React.JSX.Element {
               height: `${size}%`,
               transform: "translate(-50%, -50%)",
               borderRadius: t.decoy ? 4 : "50%",
-              border: "2px solid #fff",
-              background: t.decoy ? "#c0392b" : "#f1c40f",
+              border: "3px solid var(--puzzle-ink)",
+              background: t.decoy ? "#ff8a80" : "#ffd166",
               color: "#111",
               padding: 0,
               cursor: "pointer",

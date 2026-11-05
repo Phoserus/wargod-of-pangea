@@ -1,9 +1,230 @@
+@import "@fontsource/bungee/400.css";
+
+/*
+ * Art direction: a brutal war-god frame (blood, iron, bone, heavy slab type) around cute, rounded,
+ * candy-coloured puzzles. --frame-* tokens style chrome; --puzzle-* tokens style the minigames.
+ */
 :root {
   --text-scale: 1;
   --color-ok: #2e7d32;
   --color-bad: #c62828;
-  --focus-ring: 3px solid var(--color-ok);
+  --focus-ring: 3px solid #ffd166;
+
+  --frame-bg: #17120f;
+  --frame-panel: #241b16;
+  --frame-edge: #5a3a2a;
+  --frame-text: #efe6d8;
+  --frame-muted: #b3a595;
+  --frame-accent: #b3261e;
+  --frame-gold: #ffd166;
+
+  --puzzle-bg: #fff4e0;
+  --puzzle-tile: #ffd6e7;
+  --puzzle-tile-alt: #cfe8ff;
+  --puzzle-ink: #3b2a4a;
+  --puzzle-radius: 14px;
+
+  --font-display: "Bungee", "Impact", system-ui, sans-serif;
 }
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  font-size: calc(16px * var(--text-scale));
+  background: var(--frame-bg);
+  color: var(--frame-text);
+  line-height: 1.45;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--frame-gold);
+}
+h1 {
+  font-size: 1.9rem;
+  margin: 0.4em 0;
+}
+a,
+.muted {
+  color: var(--frame-muted);
+}
+
+/* Shell */
+.shell {
+  min-height: 100vh;
+}
+.shell-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--frame-panel);
+  border-bottom: 3px solid var(--frame-accent);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.brand {
+  font-family: var(--font-display);
+  color: var(--frame-gold);
+  font-size: 1.1rem;
+}
+.shell-bar nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1 1 auto;
+}
+.shell-body {
+  padding: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.9rem;
+  color: var(--frame-gold);
+}
+
+/* Buttons */
+button {
+  font: inherit;
+  background: var(--frame-panel);
+  color: var(--frame-text);
+  border: 2px solid var(--frame-edge);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    transform 0.08s,
+    background 0.12s;
+}
+button:hover:not(:disabled) {
+  background: #3a2a20;
+  transform: translateY(-1px);
+}
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.nav-btn[aria-current="page"] {
+  background: var(--frame-accent);
+  border-color: var(--frame-gold);
+  color: #fff;
+}
+button.primary {
+  background: var(--frame-accent);
+  border-color: var(--frame-gold);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  padding: 10px 22px;
+}
+.cta {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.tagline {
+  color: var(--frame-gold);
+}
+.loop-hint {
+  font-family: var(--font-display);
+  color: var(--frame-muted);
+}
+
+progress {
+  width: 100%;
+  height: 14px;
+  accent-color: var(--frame-accent);
+}
+
+/* Cute puzzle surface inside the brutal frame */
+.puzzle-surface {
+  background: var(--puzzle-bg);
+  color: var(--puzzle-ink);
+  border: 4px solid var(--frame-gold);
+  border-radius: var(--puzzle-radius);
+  padding: 16px;
+  display: inline-block;
+}
+.puzzle-surface button {
+  border-radius: 10px;
+}
+
+/* Juice */
+@keyframes flash-hit {
+  0% {
+    background: var(--frame-accent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.fx-hit {
+  animation: flash-hit 0.35s ease-out;
+}
+.fx-shake {
+  animation: shake 0.25s linear;
+}
+.level-up {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--frame-gold);
+  border: 3px solid var(--frame-gold);
+  border-radius: var(--puzzle-radius);
+  padding: 8px 16px;
+  background: var(--frame-accent);
+  animation: pop 0.5s ease-out;
+}
+.result-win {
+  color: #9be28f;
+}
+.result-lose {
+  color: #ff8a80;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -13,19 +234,25 @@
     transition-duration: 0.01ms !important;
   }
 }
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
 .colorblind {
   --color-ok: #0072b2;
   --color-bad: #d55e00;
 }
-body {
-  font-size: calc(16px * var(--text-scale));
-}
 
 /* Accessibility: visible keyboard focus indicator for canvas puzzles and buttons */
 canvas:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
   outline: var(--focus-ring);
-  outline-offset: 4px;
+  outline-offset: 3px;
 }
 
 /* Visually hidden status announcer for screen readers */
@@ -39,4 +266,13 @@ button:focus-visible {
   clip: rect(0, 0, 0, 0);
   border: 0;
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .shell-body {
+    padding: 8px;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
 }

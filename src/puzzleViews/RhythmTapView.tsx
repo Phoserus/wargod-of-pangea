@@ -1,10 +1,14 @@
 import React, { useEffect } from "react";
 import type { RhythmTapState } from "../core/puzzles/rhythmTap";
 import type { PuzzleRun } from "../usePuzzleRun";
+import { sfx } from "../core/audio";
+import { useOnChange } from "../useOnChange";
 
 export function RhythmTapView({ state, send }: PuzzleRun): React.JSX.Element {
   const s = state as RhythmTapState;
   const over = s.status !== "playing";
+  useOnChange(s.hits, () => sfx("hit"));
+  useOnChange(s.misses, () => sfx("miss"));
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -19,7 +23,7 @@ export function RhythmTapView({ state, send }: PuzzleRun): React.JSX.Element {
 
   const left = s.zoneCenter - s.zoneWidth / 2;
   return (
-    <div>
+    <div className="puzzle-surface">
       <p aria-live="polite">
         Strikes {s.hits}/{s.cfg.strikes} · Misses {s.misses}/{s.cfg.missLimit}
         {s.lastResult ? ` · ${s.lastResult === "hit" ? "Clean strike!" : "Missed the glow"}` : ""}
@@ -31,8 +35,10 @@ export function RhythmTapView({ state, send }: PuzzleRun): React.JSX.Element {
           position: "relative",
           height: 48,
           maxWidth: 480,
-          background: "#2c2c2c",
-          border: "1px solid #777",
+          background: "var(--puzzle-tile-alt)",
+          border: "3px solid var(--puzzle-ink)",
+          borderRadius: 24,
+          overflow: "hidden",
         }}
       >
         <div
@@ -53,7 +59,7 @@ export function RhythmTapView({ state, send }: PuzzleRun): React.JSX.Element {
             bottom: -4,
             left: `calc(${s.position}% - 2px)`,
             width: 4,
-            background: "#fff",
+            background: "var(--puzzle-ink)",
           }}
         />
       </div>

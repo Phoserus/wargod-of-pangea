@@ -5,6 +5,8 @@ import type { LoggedInput } from "./core/puzzles/driver";
 import { useGame } from "./core/store";
 import { levelFromXp } from "./core/xp";
 import { PuzzleCanvas } from "./PuzzleCanvas";
+import { sfx } from "./core/audio";
+import { skillName, t } from "./core/i18n";
 
 // Skills whose puzzle has been rebuilt on the fixed-step contract; the rest show "coming soon".
 const isPlayable = (primitive: string): boolean => getPuzzle(primitive) !== undefined;
@@ -23,7 +25,11 @@ export function PlayScreen(): React.JSX.Element {
   const [actionId, setActionId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [seed, setSeed] = useState(() => Date.now() >>> 0);
-  const [result, setResult] = useState<{ status: "won" | "lost"; text: string } | null>(null);
+  const [result, setResult] = useState<{
+    status: "won" | "lost";
+    text: string;
+    levelUp?: string;
+  } | null>(null);
 
   const skills = useGame((s) => s.skills);
   const inventory = useGame((s) => s.inventory);
@@ -49,6 +55,7 @@ export function PlayScreen(): React.JSX.Element {
       console.info("puzzle result", { skill: skillId, action: actionId, seed, status, log });
     }
     if (status === "lost" || !action) {
+      sfx("lose");
       setResult({ status: "lost", text: "Failed. Nothing was used." });
       return;
     }
@@ -58,9 +65,13 @@ export function PlayScreen(): React.JSX.Element {
       return;
     }
     const gained = describeBag(r.gained);
+    sfx(r.leveledUp ? "levelup" : "win");
     setResult({
       status: "won",
-      text: `${r.leveledUp ? `Level up! ${skill.displayName} is now ${r.newLevel}. ` : ""}+${r.xp} XP${gained ? `, +${gained}` : ""}`,
+      text: `+${r.xp} XP${gained ? `, +${gained}` : ""}`,
+      levelUp: r.leveledUp
+        ? `${t("ui.levelUp")}: ${skillName(skillId, skill.displayName)} ${r.newLevel}`
+        : undefined,
     });
   };
 
@@ -70,13 +81,11 @@ export function PlayScreen(): React.JSX.Element {
         display: "grid",
         gridTemplateColumns: "260px 1fr",
         gap: 16,
-        height: "100vh",
-        padding: 16,
       }}
     >
       <aside
         aria-label="Skill list"
-        style={{ border: "1px solid #555", padding: 8, overflow: "auto" }}
+        style={{ border: "2px solid var(--frame-edge)", padding: 8, overflow: "auto" }}
       >
         <h3>Skills</h3>
         <ul style={{ listStyle: "none", padding: 0 }}>
@@ -103,7 +112,7 @@ export function PlayScreen(): React.JSX.Element {
                     cursor: "pointer",
                   }}
                 >
-                  {data.displayName} — L{levelFromXp(skills[id] ?? 0)}
+                  {skillName(id, data.displayName)} — L{levelFromXp(skills[id] ?? 0)}
                   {ok ? "" : " (soon)"}
                 </button>
               </li>
@@ -114,9 +123,9 @@ export function PlayScreen(): React.JSX.Element {
 
       <main
         aria-label="Puzzle area"
-        style={{ border: "1px solid #555", padding: 16, overflow: "auto" }}
+        style={{ border: "2px solid var(--frame-edge)", padding: 16, overflow: "auto" }}
       >
-        <h1>{skill.displayName}</h1>
+        <h1>{skillName(skillId, skill.displayName)}</h1>
         <p>
           Level {level} · {skills[skillId] ?? 0} XP
         </p>
@@ -134,7 +143,10 @@ export function PlayScreen(): React.JSX.Element {
             />
             {result && (
               <div role="status" style={{ marginTop: 16 }}>
-                <p>{result.text}</p>
+                {result.levelUp && <p className="level-up">{result.levelUp}</p>}
+                <p className={result.status === "won" ? "result-win" : "result-lose"}>
+                  {result.text}
+                </p>
                 <button onClick={reset} autoFocus>
                   Back to actions
                 </button>

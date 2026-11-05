@@ -31,19 +31,21 @@
     "transmutation": "Soulforge"
   },
   "ui": {
-    "mainMenu": "Main Menu",
-    "play": "Play",
-    "combat": "Combat",
-    "crafting": "Crafting",
+    "mainMenu": "Home",
+    "play": "Train",
+    "combat": "Fight",
+    "crafting": "Recipes",
     "economy": "Economy",
-    "consumables": "Consumables",
     "quests": "Quests",
     "pvp": "PvP Hotseat",
     "settings": "Settings",
     "debug": "Debug",
     "skills": "Skills",
     "locations": "Locations",
-    "inventory": "Inventory",
-    "welcome": "Welcome to The Wargod of Pangea."
+    "inventory": "Gear & Loot",
+    "welcome": "Welcome to The Wargod of Pangea.",
+    "loopHint": "Mine ore. Smith a blade. Spill goblin blood. Repeat.",
+    "levelUp": "Your power swells",
+    "victory": "Blood and glory!"
   }
 }

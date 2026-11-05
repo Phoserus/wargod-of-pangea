@@ -53,7 +53,8 @@ core/
   economy/          pure buy/sell/move over inventory + bank with positive-integer guards
   items/            craft(inventory, recipeId) over content recipes
   quests/           Quest/DialogueNode types + one DEMO_QUEST
-  audio.ts          Web Audio: master/music/sfx gains, beep SFX, single-oscillator "music"
+  audio.ts          Procedural Web Audio: sfx(name), setScene(scene) music loops, volume via applySettings
+  i18n.ts           t(key) over locales/en.json, skillName(id) themed names
 data/               skills/*.json (23), enemies.json (3, zone "Goblin Hollow"), items.json (8), recipes.json (4)
 locales/en.json     themed skill display names + a few UI strings
 ```
@@ -96,3 +97,10 @@ Legacy (coming soon): dungeoneering/trapping → AimShot · defense → Telegrap
 ## Accessibility features present
 
 `prefers-reduced-motion` CSS, colorblind token swap (`.colorblind`), text scale var, `:focus-visible` ring, `.sr-only` live-region announcer in each canvas, keyboard handlers in canvases.
+
+## UI shell (Phase 4)
+
+- `Shell.tsx`: header nav, HUD (gold/HP/ATK/level), unlocks audio on first input, picks music scene per screen.
+- `route.ts`: hash routing (`#/play`) via `useRoute`/`navigate`.
+- `styles.css`: `--frame-*` (dark/brutal) and `--puzzle-*` (cute) tokens; `.puzzle-surface` wraps puzzle views; `.reduced-motion` mirrors the setting.
+- Puzzle views and CombatScreen play sfx through `useOnChange`.

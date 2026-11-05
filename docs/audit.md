@@ -185,3 +185,5 @@ Problems, gaps, and improvement opportunities only. How things currently work �
 3. **Y-1/E-1** (one store, full save) → **S-1/S-2** (yields, actions) → **E-2**, **C-1/C-3** (stats from skills + gear).
 4. **T-1, V-1, F-1** (theme, art direction, shell), then **A-1/A-2**.
 5. Only then: **Q-1/Q-2**, **B-1** (async PvP / cloud saves), and the remaining skills.
+
+> Phase 4 progress: V-1, V-4, A-1..A-3, F-1 (hash routing + shell), X-2 (reduced-motion class) and T-1/S-8 (themed names) addressed in part. PixiJS/Howler and real assets deferred.

@@ -12,9 +12,9 @@ import { QuestsScreen } from "./QuestsScreen";
 import { PvPHotseat } from "./PvPHotseat";
 import { SaveTools } from "./SaveTools";
 import { useGame } from "./core/store";
-
-type Screen =
-  "menu" | "settings" | "debug" | "play" | "combat" | "crafting" | "economy" | "quests" | "pvp";
+import { Shell } from "./Shell";
+import { t } from "./core/i18n";
+import { useRoute, navigate } from "./route";
 
 const STORAGE_KEY = "skillbound.settings";
 
@@ -54,8 +54,8 @@ function saveSettings(s: Settings): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-export function App(): React.JSX.Element {
-  const [screen, setScreen] = useState<Screen>("menu");
+function Screens(): React.JSX.Element {
+  const screen = useRoute();
   const recoveryNote = useGame((s) => s.recoveryNote);
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [debugSeed, setDebugSeed] = useState("1");
@@ -66,7 +66,8 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     document.documentElement.style.setProperty("--text-scale", String(settings.textSize));
     document.body.classList.toggle("colorblind", settings.colorblindSafe);
-  }, [settings.textSize, settings.colorblindSafe]);
+    document.body.classList.toggle("reduced-motion", settings.reducedMotion);
+  }, [settings.textSize, settings.colorblindSafe, settings.reducedMotion]);
 
   useEffect(() => {
     applySettings({
@@ -192,7 +193,6 @@ export function App(): React.JSX.Element {
           />
         </label>
         <SaveTools />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </main>
     );
   }
@@ -215,7 +215,6 @@ export function App(): React.JSX.Element {
         </label>
         <button onClick={launch}>Launch</button>
         {debugState && <p>Status: {debugState.status}</p>}
-        <button onClick={() => setScreen("menu")}>Back</button>
       </main>
     );
   }
@@ -224,7 +223,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <PlayScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -233,7 +231,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <CraftingScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -242,7 +239,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <CombatScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -251,7 +247,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <EconomyScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -260,7 +255,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <QuestsScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -269,7 +263,6 @@ export function App(): React.JSX.Element {
     return (
       <div>
         <PvPHotseat />
-        <button onClick={() => setScreen("menu")}>Back</button>
       </div>
     );
   }
@@ -282,16 +275,24 @@ export function App(): React.JSX.Element {
           <button onClick={() => useGame.getState().setRecoveryNote(null)}>Dismiss</button>
         </div>
       )}
-      <h1>The Wargod of Pangea</h1>
-      <p>A brutal war-god RPG — train skills via silly pretty-and-bubbly mobile minigames.</p>
-      <button onClick={() => setScreen("settings")}>Settings</button>
-      {import.meta.env.DEV && <button onClick={() => setScreen("debug")}>Debug</button>}
-      <button onClick={() => setScreen("play")}>Play</button>
-      <button onClick={() => setScreen("combat")}>Combat</button>
-      <button onClick={() => setScreen("crafting")}>Crafting</button>
-      <button onClick={() => setScreen("economy")}>Economy</button>
-      <button onClick={() => setScreen("quests")}>Quests</button>
-      <button onClick={() => setScreen("pvp")}>PvP</button>
+      <h1>{t("game.title")}</h1>
+      <p className="tagline">{t("game.tagline")}</p>
+      <p>{t("game.flavor")}</p>
+      <p className="loop-hint">{t("ui.loopHint")}</p>
+      <div className="cta">
+        <button className="primary" onClick={() => navigate("play")}>
+          {t("ui.play")}
+        </button>
+        <button onClick={() => navigate("combat")}>{t("ui.combat")}</button>
+      </div>{" "}
     </main>
+  );
+}
+
+export function App(): React.JSX.Element {
+  return (
+    <Shell>
+      <Screens />
+    </Shell>
   );
 }

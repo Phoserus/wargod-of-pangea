@@ -15,7 +15,7 @@ describe("PlayScreen", () => {
 
   it("blocks smithing without materials and locks high-level actions", () => {
     render(<PlayScreen />);
-    fireEvent.click(screen.getByRole("button", { name: /^Smithing/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Anvil of War/ }));
     fireEvent.click(screen.getByRole("button", { name: /smelt copper/i }));
     expect((screen.getByRole("button", { name: "Start" }) as HTMLButtonElement).disabled).toBe(
       true,
