@@ -118,4 +118,5 @@ Quests/dialogue (Q-1..3), world content (Q-2), lore doc (T-2, write alongside Ph
 
 ## Progress
 
-- **Phase 0:** done 2026-11-04, including README/DESIGN/AGENTS docs and first commit. Pending: GitHub repo creation and remote (needs the user's GitHub login; `gh` is not installed here).
+- **Phase 0:** done 2026-11-04. Repo: https://github.com/Phoserus/wargod-of-pangea (Pages enabled; deploy via Actions).
+- **Phase 1:** done 2026-11-04 for the slice. New fixed-step contract in `src/core/puzzles/`; GridReveal (Mining), RhythmTap (Smithing), TargetShot (Attack); `PuzzleCanvas` + three views; orphan canvases deleted; non-slice skills show "coming soon" in Play. Not yet done: legacy primitives, `MinigameRunner`, `PvPHotseat`, `skillActions.ts` still exist for PvP/Debug and are retired as each skill is migrated; content-lint only checks structure (the per-tier config/solver check lives in `puzzles.test.ts`).

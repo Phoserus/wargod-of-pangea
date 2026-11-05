@@ -1,12 +1,55 @@
 {
   "id": "mining",
   "displayName": "Mining",
-  "primitive": "Mining",
+  "primitive": "GridReveal",
   "levelCap": 100,
   "tiers": [
-    { "tier": 1, "unlockLevel": 1, "config": { "rocks": 4, "target": 3 } },
-    { "tier": 2, "unlockLevel": 40, "config": { "rocks": 5, "target": 4 } },
-    { "tier": 3, "unlockLevel": 75, "config": { "rocks": 6, "target": 5 } }
+    {
+      "tier": 1,
+      "unlockLevel": 1,
+      "config": {
+        "swings": 9,
+        "width": 6,
+        "hazards": 4,
+        "stability": 2,
+        "ore": 5,
+        "target": 4,
+        "height": 6
+      }
+    },
+    {
+      "tier": 2,
+      "unlockLevel": 40,
+      "config": {
+        "swings": 10,
+        "width": 7,
+        "hazards": 7,
+        "stability": 2,
+        "ore": 6,
+        "target": 5,
+        "height": 7
+      }
+    },
+    {
+      "tier": 3,
+      "unlockLevel": 75,
+      "config": {
+        "swings": 11,
+        "width": 8,
+        "hazards": 10,
+        "stability": 2,
+        "ore": 7,
+        "target": 6,
+        "height": 8
+      }
+    }
   ],
-  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+  "actions": [
+    {
+      "id": "train",
+      "minLevel": 1,
+      "xp": 10,
+      "tier": 1
+    }
+  ]
 }

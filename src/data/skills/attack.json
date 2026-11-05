@@ -1,27 +1,61 @@
 {
   "id": "attack",
   "displayName": "Attack",
-  "primitive": "AimShot",
+  "primitive": "TargetShot",
   "levelCap": 100,
   "tiers": [
     {
       "tier": 1,
       "unlockLevel": 1,
-      "config": { "decoyCount": 1, "requiredHits": 3, "missLimit": 3 }
+      "config": {
+        "requiredHits": 3,
+        "maxActive": 3,
+        "spawnMs": 900,
+        "decoyChance": 0.25,
+        "missLimit": 3,
+        "radius": 9,
+        "lifetimeMs": 2500
+      }
     },
     {
       "tier": 2,
       "unlockLevel": 40,
-      "config": { "decoyCount": 2, "requiredHits": 4, "missLimit": 3 }
+      "config": {
+        "requiredHits": 4,
+        "maxActive": 4,
+        "spawnMs": 750,
+        "decoyChance": 0.35,
+        "missLimit": 3,
+        "radius": 8,
+        "lifetimeMs": 2000
+      }
     },
     {
       "tier": 3,
       "unlockLevel": 75,
-      "config": { "decoyCount": 3, "requiredHits": 5, "missLimit": 3 }
+      "config": {
+        "requiredHits": 5,
+        "maxActive": 4,
+        "spawnMs": 600,
+        "decoyChance": 0.4,
+        "missLimit": 3,
+        "radius": 7,
+        "lifetimeMs": 1600
+      }
     }
   ],
   "actions": [
-    { "id": "strike_dummy", "minLevel": 1, "xp": 10, "tier": 1 },
-    { "id": "spar", "minLevel": 10, "xp": 25, "tier": 1 }
+    {
+      "id": "strike_dummy",
+      "minLevel": 1,
+      "xp": 10,
+      "tier": 1
+    },
+    {
+      "id": "spar",
+      "minLevel": 10,
+      "xp": 25,
+      "tier": 1
+    }
   ]
 }
