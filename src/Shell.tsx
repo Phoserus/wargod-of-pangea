@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { derivePlayerStats } from "./core/combat/player";
 import { setScene, sfx, unlockAudio, type Scene } from "./core/audio";
 import { t } from "./core/i18n";
+import { SKILLS } from "./core/content";
 import { useGame } from "./core/store";
 import { levelFromXp } from "./core/xp";
 import { navigate, useRoute, type Screen } from "./route";
@@ -34,7 +35,7 @@ function Hud(): React.JSX.Element {
   const skills = useGame((s) => s.skills);
   const equipment = useGame((s) => s.equipment);
   const stats = derivePlayerStats(skills, equipment);
-  const total = Object.values(skills).reduce((n, xp) => n + levelFromXp(xp), 0);
+  const total = SKILLS.reduce((n, s) => n + levelFromXp(skills[s.id] ?? 0), 0);
   return (
     <div className="hud" role="status" aria-label="Player summary">
       <span>
