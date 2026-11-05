@@ -1,0 +1,42 @@
+:root {
+  --text-scale: 1;
+  --color-ok: #2e7d32;
+  --color-bad: #c62828;
+  --focus-ring: 3px solid var(--color-ok);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.colorblind {
+  --color-ok: #0072b2;
+  --color-bad: #d55e00;
+}
+body {
+  font-size: calc(16px * var(--text-scale));
+}
+
+/* Accessibility: visible keyboard focus indicator for canvas puzzles and buttons */
+canvas:focus-visible,
+button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 4px;
+}
+
+/* Visually hidden status announcer for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  white-space: nowrap;
+}

@@ -1,0 +1,24 @@
+{
+  "id": "dungeoneering",
+  "displayName": "Dungeoneering",
+  "primitive": "AimShot",
+  "levelCap": 100,
+  "tiers": [
+    {
+      "tier": 1,
+      "unlockLevel": 1,
+      "config": { "decoyCount": 1, "requiredHits": 3, "missLimit": 3 }
+    },
+    {
+      "tier": 2,
+      "unlockLevel": 40,
+      "config": { "decoyCount": 2, "requiredHits": 4, "missLimit": 3 }
+    },
+    {
+      "tier": 3,
+      "unlockLevel": 75,
+      "config": { "decoyCount": 3, "requiredHits": 5, "missLimit": 2 }
+    }
+  ],
+  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "traveling",
+  "displayName": "Traveling",
+  "primitive": "MemorySequence",
+  "levelCap": 100,
+  "tiers": [
+    {
+      "tier": 1,
+      "unlockLevel": 1,
+      "config": { "sequenceLength": 4, "symbolCount": 4, "missLimit": 3 }
+    },
+    {
+      "tier": 2,
+      "unlockLevel": 40,
+      "config": { "sequenceLength": 6, "symbolCount": 5, "missLimit": 3 }
+    },
+    {
+      "tier": 3,
+      "unlockLevel": 75,
+      "config": { "sequenceLength": 8, "symbolCount": 6, "missLimit": 2 }
+    }
+  ],
+  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+}

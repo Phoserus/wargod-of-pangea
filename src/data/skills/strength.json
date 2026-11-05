@@ -1,0 +1,16 @@
+{
+  "id": "strength",
+  "displayName": "Strength",
+  "primitive": "TimingBar",
+  "levelCap": 100,
+  "tiers": [
+    { "tier": 1, "unlockLevel": 1, "config": { "window": 0.17 } },
+    { "tier": 2, "unlockLevel": 40, "config": { "window": 0.14 } },
+    {
+      "tier": 3,
+      "unlockLevel": 75,
+      "config": { "window": 0.11000000000000001 }
+    }
+  ],
+  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "transmutation",
+  "displayName": "Transmutation",
+  "primitive": "MergeCombine",
+  "levelCap": 100,
+  "tiers": [
+    {
+      "tier": 1,
+      "unlockLevel": 1,
+      "config": { "boardSize": 5, "reagentCount": 4, "targetTier": 3, "moveLimit": 10 }
+    },
+    {
+      "tier": 2,
+      "unlockLevel": 40,
+      "config": { "boardSize": 6, "reagentCount": 5, "targetTier": 4, "moveLimit": 12 }
+    },
+    {
+      "tier": 3,
+      "unlockLevel": 75,
+      "config": { "boardSize": 7, "reagentCount": 6, "targetTier": 5, "moveLimit": 15 }
+    }
+  ],
+  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+}

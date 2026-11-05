@@ -1,0 +1,4 @@
+[
+  { "id": "smelt", "inputs": { "ore": 2 }, "output": "bar", "outputQty": 1 },
+  { "id": "forge", "inputs": { "bar": 3 }, "output": "sword", "outputQty": 1 }
+]

@@ -1,0 +1,12 @@
+{
+  "id": "defense",
+  "displayName": "Defense",
+  "primitive": "TelegraphBlock",
+  "levelCap": 100,
+  "tiers": [
+    { "tier": 1, "unlockLevel": 1, "config": { "telegraphMs": 900 } },
+    { "tier": 2, "unlockLevel": 40, "config": { "telegraphMs": 800 } },
+    { "tier": 3, "unlockLevel": 75, "config": { "telegraphMs": 700 } }
+  ],
+  "actions": [{ "id": "train", "minLevel": 1, "xp": 10, "tier": 1 }]
+}
