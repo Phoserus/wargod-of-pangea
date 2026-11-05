@@ -49,10 +49,10 @@ Problems, gaps, and improvement opportunities only. How things currently work �
 
 ## 3. Skills & Progression
 
-- 🟠 **S-1 [Gap] Skills produce nothing.** A win only adds XP: no resource yields, no drops, no level-scaled yield (spec §8), no Mining → Smithing → gear chain. "Skills feed each other" doesn't exist.
-- 🟠 **S-2 [Gap] Actions aren't selectable.** The UI picks the first action matching the tier, so `spar` in `attack.json` is unreachable at tier 1. Add action selection; let each action carry its own config override, input items, and outputs.
+- ~~🟠 **S-1 [Gap] Skills produce nothing.**~~ Resolved 2026-11-04 (Phase 2): actions yield items scaled by level; Mining -> Smithing chain exists for the slice.
+- ~~🟠 **S-2 [Gap] Actions aren't selectable.**~~ Resolved 2026-11-04 (Phase 2): Play lists actions with inputs/outputs and a Start button.
 - 🟠 **S-3 [Bug] OSRS XP curve with puzzle-speed wins.** At 10 XP/win and L99 = 13 M XP, one skill needs ~1.3 M wins. Flatten the curve or scale XP per tier; tune using **L-12** data.
-- 🟡 **S-4 [Bug] Tier is derived two ways.** `PlayScreen` uses hardcoded `tierForLevel()` (40/75) to choose the _action_ but `unlockLevel` from JSON for the _config_; they can disagree. Use JSON only.
+- ~~🟡 **S-4 [Bug] Tier is derived two ways.**~~ Resolved 2026-11-04 (Phase 2): tier config comes from JSON unlockLevel only.
 - 🟡 **S-5 [Gap] `crafting` is in the README catalog (24 skills listed, "23" stated), in locales, and has primitives, but has no `crafting.json`.** Reconcile.
 - 🟡 **S-6 [Gap] `levelCap` in JSON is unused (cap is hardcoded 100).** No total level, progress bar, or level-up feedback beyond a text line.
 - 🟢 **S-7 [Bug] `xpForLevel` re-sums on every call and `levelFromXp` loops it,** called per skill on every render. Precompute a 101-entry table.
@@ -60,10 +60,10 @@ Problems, gaps, and improvement opportunities only. How things currently work �
 
 ## 4. Items, Economy & Crafting
 
-- 🔴 **E-1 [Gap] No unified game state.** Economy, Crafting, Consumables, and Combat each hold private `useState` with hardcoded starts (`ore: 5`, `bread: 2`, `currency: 0`) and lose it on navigation. See **Y-1**.
-- 🟠 **E-2 [Gap] Item/recipe data is a stub** (3 items, 2 recipes; no skill, level, tool, XP, category, value, equip slot/stats). `validate-data` doesn't cross-check references (recipe inputs, consumables, drops).
-- 🟠 **E-3 [Bug] Economy accepts invalid quantities.** `buy`/`sell`/`moveItem` don't validate `qty`: negative `qty` in `buy` increases currency, negative in `sell` drains it; fractional quantities pass; `sell` trusts a caller-supplied price. Shop prices are hardcoded in `EconomyScreen`; no stock limits.
-- 🟡 **E-4 [Bug] `craft()` leaves zero-quantity keys;** the UI hardcodes "smelt"/"forge" instead of listing recipes from data, and gives no feedback on missing inputs.
+- ~~🔴 **E-1 [Gap] No unified game state.**~~ Resolved 2026-11-04 (Phase 2): one Zustand store (core/store.ts).
+- ~~🟠 **E-2 [Gap] Item/recipe data is a stub**~~ Resolved 2026-11-04 (Phase 2): real item/recipe data (core/content.ts) with cross-reference validation. Consumables/enemies/quests still hardcoded.
+- ~~🟠 **E-3 [Bug] Economy accepts invalid quantities.**~~ Resolved 2026-11-04 (Phase 2): positive-integer guards; shop prices derived from item value.
+- ~~🟡 **E-4 [Bug] `craft()` leaves zero-quantity keys;**~~ Resolved 2026-11-04 (Phase 2): empty stacks pruned; Crafting lists recipes from data.
 - 🟡 **E-5 [Gap] No inventory capacity, equipment, or item-use flow** (Consumables = an "Eat bread" button).
 - 🟢 **E-6 [Opp] Define currency sinks** (repairs, travel, upgrades) before any trading is added.
 
@@ -117,9 +117,9 @@ Problems, gaps, and improvement opportunities only. How things currently work �
 
 ## 10. Save & System Management
 
-- 🔴 **Y-1 [Gap] No game-state architecture.** Save holds only `{version, skills: id→xp}`; inventory, bank, currency, equipment, quest state, and stats aren't saved; there's no central store (**E-1**). Introduce one typed store (Zustand is already a dependency but unused), Zod-validated load, debounced autosave, and real migrations.
-- 🟠 **Y-2 [Bug] Save robustness.** `loadGame()` swallows every error (`catch { return null }`) and the next `saveGame` overwrites a corrupted/newer save, destroying player data. No backup slot, no handling of saves from a newer version, no quota/private-mode handling. Keep the unreadable blob under a backup key and show recovery UI.
-- 🟠 **Y-3 [Gap] No export/import or cloud save.** A downloadable save file/string is the minimum safety net for a static-hosted game.
+- ~~🔴 **Y-1 [Gap] No game-state architecture.**~~ Resolved 2026-11-04 (Phase 2): store + zod save v2 + debounced autosave + migration. Quest state/stats not yet saved.
+- ~~🟠 **Y-2 [Bug] Save robustness.**~~ Resolved 2026-11-04 (Phase 2): corrupt saves are backed up and a recovery banner is shown.
+- ~~🟠 **Y-3 [Gap] No export/import or cloud save.**~~ Resolved 2026-11-04 (Phase 2): export/import save string in Settings. Cloud save still open.
 - 🟡 **Y-4 [Bug] Settings load spreads unvalidated JSON** (wrong types survive; no clamping of sliders).
 - 🟡 **Y-5 [Opp] Decide on offline/idle progression** if the "idle/RuneScape-style" audience is real.
 - 🟢 **Y-6 [Gap] No dev telemetry hooks** (see **L-12**).

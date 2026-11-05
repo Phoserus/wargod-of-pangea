@@ -1,26 +1,27 @@
-import React, { useState } from "react";
-import { craft, ITEMS } from "./core/items/crafting";
+import React from "react";
+import { RECIPES, ITEMS } from "./core/content";
+import { useGame } from "./core/store";
+import { levelFromXp } from "./core/xp";
 
 export function CraftingScreen(): React.JSX.Element {
-  const [inv, setInv] = useState<Record<string, number>>({
-    ore: 5,
-    bar: 0,
-    sword: 0,
-  });
-  const doCraft = (id: string): void => {
-    const r = craft(inv, id);
-    if (r.ok) setInv(r.inventory);
-  };
+  const inventory = useGame((s) => s.inventory);
+  const skills = useGame((s) => s.skills);
   return (
     <main aria-label="Crafting">
-      <h1>Crafting</h1>
-      {Object.entries(inv).map(([k, v]) => (
-        <p key={k}>
-          {ITEMS[k]?.name ?? k}: {v}
-        </p>
-      ))}
-      <button onClick={() => doCraft("smelt")}>Smelt (2 ore to 1 bar)</button>
-      <button onClick={() => doCraft("forge")}>Forge (3 bar to 1 sword)</button>
+      <h1>Recipes</h1>
+      <p>Items are made by playing the skill&apos;s minigame on the Play screen.</p>
+      <ul>
+        {RECIPES.map((r) => (
+          <li key={r.id}>
+            <strong>{r.name}</strong> ({r.skill} L{r.level}, you: L
+            {levelFromXp(skills[r.skill] ?? 0)}):{" "}
+            {Object.entries(r.inputs)
+              .map(([id, n]) => `${ITEMS[id]?.name ?? id} ${inventory[id] ?? 0}/${n}`)
+              .join(", ")}{" "}
+            → {r.outputQty} {ITEMS[r.output]?.name ?? r.output}
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }

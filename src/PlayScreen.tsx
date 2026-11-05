@@ -1,75 +1,67 @@
 import React, { useState } from "react";
-import { addXp, createSkillState, levelOf, tierForLevel } from "./core/skills";
-import { saveGame, loadGame } from "./core/save";
+import { ITEMS, SKILLS, SKILL_BY_ID, outputQuantity, type ResolvedAction } from "./core/content";
 import { getPuzzle } from "./core/puzzles/registry";
 import type { LoggedInput } from "./core/puzzles/driver";
+import { useGame } from "./core/store";
+import { levelFromXp } from "./core/xp";
 import { PuzzleCanvas } from "./PuzzleCanvas";
 
-interface SkillData {
-  id: string;
-  displayName: string;
-  primitive: string;
-  levelCap: number;
-  tiers: Array<{ tier: number; unlockLevel: number; config: Record<string, unknown> }>;
-  actions: Array<{ id: string; minLevel: number; xp: number; tier: number }>;
-}
-
-const SKILLS: SkillData[] = Object.values(
-  import.meta.glob<{ default: SkillData }>("./data/skills/*.json", { eager: true }),
-).map((m) => m.default);
-const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
-
 // Skills whose puzzle has been rebuilt on the fixed-step contract; the rest show "coming soon".
-const isPlayable = (s: SkillData): boolean => getPuzzle(s.primitive) !== undefined;
+const isPlayable = (primitive: string): boolean => getPuzzle(primitive) !== undefined;
 const SKILL_IDS = [...SKILLS]
-  .sort((a, b) => Number(isPlayable(b)) - Number(isPlayable(a)))
+  .sort((a, b) => Number(isPlayable(b.primitive)) - Number(isPlayable(a.primitive)))
   .map((s) => s.id);
 
-type XpMap = Record<string, number>;
+const itemName = (id: string): string => ITEMS[id]?.name ?? id;
+const describeBag = (bag: Record<string, number>): string =>
+  Object.entries(bag)
+    .map(([id, n]) => `${n} ${itemName(id)}`)
+    .join(", ");
 
 export function PlayScreen(): React.JSX.Element {
-  const [selectedSkillId, setSelectedSkillId] = useState<string>("attack");
-  const [xp, setXp] = useState<XpMap>(() => ({ ...(loadGame()?.skills ?? {}) }));
+  const [skillId, setSkillId] = useState("mining");
+  const [actionId, setActionId] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
   const [seed, setSeed] = useState(() => Date.now() >>> 0);
   const [result, setResult] = useState<{ status: "won" | "lost"; text: string } | null>(null);
 
-  const skill = SKILL_BY_ID[selectedSkillId];
-  const stateOf = (id: string) => ({ ...createSkillState(id), xp: xp[id] ?? 0 });
-  const level = levelOf(stateOf(selectedSkillId));
-  const tier = tierForLevel(level);
+  const skills = useGame((s) => s.skills);
+  const inventory = useGame((s) => s.inventory);
+  const completeAction = useGame((s) => s.completeAction);
+
+  const skill = SKILL_BY_ID[skillId];
+  const level = levelFromXp(skills[skillId] ?? 0);
+  const playable = isPlayable(skill.primitive);
+  const action: ResolvedAction | undefined = skill.actions.find((a) => a.id === actionId);
   const unlocked = skill.tiers.filter((t) => t.unlockLevel <= level);
   const tierConfig = (unlocked.length > 0 ? unlocked[unlocked.length - 1] : skill.tiers[0]).config;
-  const action = skill.actions.find((a) => a.tier === tier && a.minLevel <= level);
-  const xpPerSuccess = action ? action.xp : 10;
+  const canStart = useGame.getState().canPerform(skillId, actionId ?? "");
+  void inventory;
+
+  const reset = (): void => {
+    setRunning(false);
+    setResult(null);
+    setSeed((s) => (s + 1) >>> 0);
+  };
 
   const onResult = (status: "won" | "lost", log: readonly LoggedInput<unknown>[]): void => {
     if (import.meta.env.DEV) {
-      console.info("puzzle result", { skill: skill.id, seed, tierConfig, status, log });
+      console.info("puzzle result", { skill: skillId, action: actionId, seed, status, log });
     }
-    if (status === "lost") {
-      setResult({ status, text: "Failed. Try again." });
+    if (status === "lost" || !action) {
+      setResult({ status: "lost", text: "Failed. Nothing was used." });
       return;
     }
-    const res = addXp(stateOf(skill.id), xpPerSuccess);
-    const next = { ...xp, [skill.id]: res.state.xp };
-    setXp(next);
-    saveGame({ version: 1, skills: next });
+    const r = completeAction(skillId, action.id);
+    if (!r.ok) {
+      setResult({ status: "lost", text: r.reason });
+      return;
+    }
+    const gained = describeBag(r.gained);
     setResult({
-      status,
-      text: res.leveledUp
-        ? `Level up! ${skill.displayName} is now ${res.newLevel}`
-        : `Success! +${xpPerSuccess} XP`,
+      status: "won",
+      text: `${r.leveledUp ? `Level up! ${skill.displayName} is now ${r.newLevel}. ` : ""}+${r.xp} XP${gained ? `, +${gained}` : ""}`,
     });
-  };
-
-  const next = (): void => {
-    setResult(null);
-    setSeed((s) => (s + 1) >>> 0);
-  };
-  const select = (id: string): void => {
-    setSelectedSkillId(id);
-    setResult(null);
-    setSeed((s) => (s + 1) >>> 0);
   };
 
   return (
@@ -90,26 +82,29 @@ export function PlayScreen(): React.JSX.Element {
         <ul style={{ listStyle: "none", padding: 0 }}>
           {SKILL_IDS.map((id) => {
             const data = SKILL_BY_ID[id];
-            const isSelected = id === selectedSkillId;
-            const playable = isPlayable(data);
+            const ok = isPlayable(data.primitive);
             return (
               <li key={id}>
                 <button
-                  onClick={() => select(id)}
-                  aria-current={isSelected}
+                  onClick={() => {
+                    setSkillId(id);
+                    setActionId(null);
+                    reset();
+                  }}
+                  aria-current={id === skillId}
                   style={{
-                    fontWeight: isSelected ? "bold" : "normal",
+                    fontWeight: id === skillId ? "bold" : "normal",
                     width: "100%",
                     textAlign: "left",
-                    background: isSelected ? "#444" : "transparent",
-                    color: playable ? "#fff" : "#888",
+                    background: id === skillId ? "#444" : "transparent",
+                    color: ok ? "#fff" : "#888",
                     border: "1px solid #777",
                     padding: 6,
                     cursor: "pointer",
                   }}
                 >
-                  {data.displayName} — L{levelOf(stateOf(id))}
-                  {playable ? "" : " (soon)"}
+                  {data.displayName} — L{levelFromXp(skills[id] ?? 0)}
+                  {ok ? "" : " (soon)"}
                 </button>
               </li>
             );
@@ -123,15 +118,15 @@ export function PlayScreen(): React.JSX.Element {
       >
         <h1>{skill.displayName}</h1>
         <p>
-          Tier {tier} · Level {level} · {xpPerSuccess} XP per success
+          Level {level} · {skills[skillId] ?? 0} XP
         </p>
 
-        {!isPlayable(skill) ? (
+        {!playable ? (
           <p>This skill&apos;s puzzle is being rebuilt. Coming soon.</p>
-        ) : (
+        ) : running && action ? (
           <>
             <PuzzleCanvas
-              key={`${selectedSkillId}-${seed}`}
+              key={`${skillId}-${action.id}-${seed}`}
               puzzleId={skill.primitive}
               seed={seed}
               config={tierConfig}
@@ -140,10 +135,57 @@ export function PlayScreen(): React.JSX.Element {
             {result && (
               <div role="status" style={{ marginTop: 16 }}>
                 <p>{result.text}</p>
-                <button onClick={next} autoFocus>
-                  {result.status === "won" ? "Next" : "Retry"}
+                <button onClick={reset} autoFocus>
+                  Back to actions
                 </button>
+                {useGame.getState().canPerform(skillId, action.id).ok && (
+                  <button
+                    onClick={() => {
+                      setResult(null);
+                      setSeed((s) => (s + 1) >>> 0);
+                    }}
+                  >
+                    Again
+                  </button>
+                )}
               </div>
+            )}
+          </>
+        ) : (
+          <>
+            <ul aria-label="Actions" style={{ listStyle: "none", padding: 0 }}>
+              {skill.actions.map((a) => {
+                const locked = level < a.minLevel;
+                return (
+                  <li key={a.id}>
+                    <button
+                      onClick={() => setActionId(a.id)}
+                      disabled={locked}
+                      aria-pressed={a.id === actionId}
+                      style={{ fontWeight: a.id === actionId ? "bold" : "normal" }}
+                    >
+                      {a.name}
+                      {locked ? ` (needs level ${a.minLevel})` : ""}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            {action && (
+              <section aria-label="Action details">
+                <p>
+                  {Object.keys(action.inputs).length > 0 && `Uses ${describeBag(action.inputs)}. `}
+                  Gives{" "}
+                  {action.outputs
+                    .map((o) => `${outputQuantity(o, level)} ${itemName(o.item)}`)
+                    .join(", ") || "nothing"}{" "}
+                  and {action.xp} XP.
+                </p>
+                <button disabled={!canStart.ok} onClick={() => setRunning(true)}>
+                  Start
+                </button>
+                {!canStart.ok && <p>{canStart.reason}</p>}
+              </section>
             )}
           </>
         )}

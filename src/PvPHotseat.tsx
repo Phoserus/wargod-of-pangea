@@ -37,7 +37,6 @@ interface SkillData {
   primitive: string;
   levelCap: number;
   tiers: Array<{ tier: number; unlockLevel: number; config: Record<string, unknown> }>;
-  actions: Array<{ id: string; minLevel: number; xp: number; tier: number }>;
 }
 
 const SKILL_DATA: Record<string, SkillData> = {

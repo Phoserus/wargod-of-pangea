@@ -11,6 +11,8 @@ import { EconomyScreen } from "./EconomyScreen";
 import { ConsumablesScreen } from "./ConsumablesScreen";
 import { QuestsScreen } from "./QuestsScreen";
 import { PvPHotseat } from "./PvPHotseat";
+import { SaveTools } from "./SaveTools";
+import { useGame } from "./core/store";
 
 type Screen =
   | "menu"
@@ -64,6 +66,7 @@ function saveSettings(s: Settings): void {
 
 export function App(): React.JSX.Element {
   const [screen, setScreen] = useState<Screen>("menu");
+  const recoveryNote = useGame((s) => s.recoveryNote);
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [debugSeed, setDebugSeed] = useState("1");
   const [debugId, setDebugId] = useState("stub");
@@ -198,6 +201,7 @@ export function App(): React.JSX.Element {
             onChange={(e) => update({ sfxVolume: Number(e.target.value) })}
           />
         </label>
+        <SaveTools />
         <button onClick={() => setScreen("menu")}>Back</button>
       </main>
     );
@@ -291,6 +295,12 @@ export function App(): React.JSX.Element {
 
   return (
     <main aria-label="Main menu">
+      {recoveryNote && (
+        <div role="alert">
+          <p>{recoveryNote}</p>
+          <button onClick={() => useGame.getState().setRecoveryNote(null)}>Dismiss</button>
+        </div>
+      )}
       <h1>The Wargod of Pangea</h1>
       <p>A brutal war-god RPG — train skills via silly pretty-and-bubbly mobile minigames.</p>
       <button onClick={() => setScreen("settings")}>Settings</button>

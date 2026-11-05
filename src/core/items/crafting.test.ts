@@ -2,25 +2,25 @@ import { describe, it, expect } from "vitest";
 import { craft } from "./crafting";
 
 describe("crafting", () => {
-  it("smelt ore to bar", () => {
-    const r = craft({ ore: 4 }, "smelt");
+  it("smelts ore into a bar", () => {
+    const r = craft({ copper_ore: 4 }, "smelt_copper");
     expect(r.ok).toBe(true);
-    expect(r.inventory).toEqual({ ore: 2, bar: 1 });
+    expect(r.inventory).toEqual({ copper_ore: 2, copper_bar: 1 });
   });
-  it("fails without enough ore", () => {
-    const r = craft({ ore: 1 }, "smelt");
+  it("fails without enough ore and leaves inventory untouched", () => {
+    const inv = { copper_ore: 1 };
+    const r = craft(inv, "smelt_copper");
     expect(r.ok).toBe(false);
+    expect(r.inventory).toBe(inv);
   });
-  it("full chain to sword", () => {
-    let inv: Record<string, number> = { ore: 6 };
-    let r = craft(inv, "smelt");
-    inv = r.inventory;
-    r = craft(inv, "smelt");
-    inv = r.inventory;
-    r = craft(inv, "smelt");
-    inv = r.inventory;
-    r = craft(inv, "forge");
-    inv = r.inventory;
-    expect(inv.sword).toBe(1);
+  it("unknown recipe fails", () => {
+    expect(craft({}, "nope").ok).toBe(false);
+  });
+  it("full chain to a sword", () => {
+    let inv: Record<string, number> = { copper_ore: 6 };
+    for (let i = 0; i < 3; i++) inv = craft(inv, "smelt_copper").inventory;
+    const r = craft(inv, "forge_copper_sword");
+    expect(r.ok).toBe(true);
+    expect(r.inventory).toEqual({ copper_sword: 1 });
   });
 });

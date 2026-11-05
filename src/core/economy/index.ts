@@ -1,7 +1,9 @@
+import { addItem, isQty, removeItem, type Bag } from "../inventory";
+
 export interface EconomyState {
   currency: number;
-  inventory: Record<string, number>;
-  bank: Record<string, number>;
+  inventory: Bag;
+  bank: Bag;
 }
 
 export function createEconomy(): EconomyState {
@@ -15,19 +17,10 @@ export function moveItem(
   from: "inventory" | "bank",
   to: "inventory" | "bank",
 ): EconomyState {
-  if (from === to) return state;
-  const src = from === "inventory" ? state.inventory : state.bank;
-  if ((src[itemId] ?? 0) < qty) return state;
-  const next = {
-    ...state,
-    inventory: { ...state.inventory },
-    bank: { ...state.bank },
-  };
-  const nSrc = from === "inventory" ? next.inventory : next.bank;
-  const nDst = to === "inventory" ? next.inventory : next.bank;
-  nSrc[itemId] -= qty;
-  nDst[itemId] = (nDst[itemId] ?? 0) + qty;
-  return next;
+  if (from === to || !isQty(qty)) return state;
+  const src = removeItem(state[from], itemId, qty);
+  if (!src) return state;
+  return { ...state, [from]: src, [to]: addItem(state[to], itemId, qty) };
 }
 
 export interface ShopItem {
@@ -35,16 +28,19 @@ export interface ShopItem {
   price: number;
 }
 
+function validPrice(p: number): boolean {
+  return Number.isInteger(p) && p >= 0;
+}
+
 export function buy(state: EconomyState, shopItem: ShopItem, qty: number): EconomyState {
+  if (!isQty(qty) || !validPrice(shopItem.price)) return state;
   const cost = shopItem.price * qty;
   if (state.currency < cost) return state;
-  const next = {
+  return {
     ...state,
     currency: state.currency - cost,
-    inventory: { ...state.inventory },
+    inventory: addItem(state.inventory, shopItem.itemId, qty),
   };
-  next.inventory[shopItem.itemId] = (next.inventory[shopItem.itemId] ?? 0) + qty;
-  return next;
 }
 
 export function sell(
@@ -53,12 +49,8 @@ export function sell(
   price: number,
   qty: number,
 ): EconomyState {
-  if ((state.inventory[itemId] ?? 0) < qty) return state;
-  const next = {
-    ...state,
-    currency: state.currency + price * qty,
-    inventory: { ...state.inventory },
-  };
-  next.inventory[itemId] -= qty;
-  return next;
+  if (!isQty(qty) || !validPrice(price)) return state;
+  const inventory = removeItem(state.inventory, itemId, qty);
+  if (!inventory) return state;
+  return { ...state, currency: state.currency + price * qty, inventory };
 }

@@ -39,11 +39,9 @@
     }
   ],
   "actions": [
-    {
-      "id": "train",
-      "minLevel": 1,
-      "xp": 10,
-      "tier": 1
-    }
+    { "id": "smelt_copper", "recipe": "smelt_copper" },
+    { "id": "forge_copper_sword", "recipe": "forge_copper_sword" },
+    { "id": "smelt_iron", "recipe": "smelt_iron" },
+    { "id": "forge_iron_sword", "recipe": "forge_iron_sword" }
   ]
 }

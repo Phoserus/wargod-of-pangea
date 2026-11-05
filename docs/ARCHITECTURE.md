@@ -39,25 +39,32 @@ core/
   skillActions.ts   legacy: primitive id -> string actions / number-action count
   skills.ts, xp.ts  skill state, OSRS XP curve (cap 100), tier by level (1/40/75)
   rng.ts            mulberry32: createRng(seed) closure and pure nextRandom(state)
-  save.ts           versioned save (v1: { skills: id -> xp }) + migration table (empty)
+  save.ts           zod-validated save v2 { skills, inventory, bank, currency, equipment },
+                    migration table (1->2), corrupt-save backup key, "WOP2:" export/import string
+  content.ts        zod schemas + loaders for items/recipes/skills, cross-reference check,
+                    outputQuantity (level-scaled yield), sellPrice (value/2)
+  store.ts          Zustand game store: completeAction, buy/sell/move, equip/unequip, loadSave
+  persistence.ts    initPersistence(): load on boot, debounced (400 ms) autosave, flush on pagehide
+  inventory.ts      pure bag helpers (isQty, hasAll, addItem, removeItem, exchange)
+  equipment.ts      equip/unequip (swaps back to inventory), equipmentStats
   config.ts         shallow legacy-primitive config validation
   combat/           resolveCombat(seed, a, b) auto-resolver
-  consumables/      food/potion/ammo table + apply/consume helpers
-  economy/          currency + inventory + bank + buy/sell/move
-  items/            items.json/recipes.json loader + craft()
+  consumables/      food/potion/ammo table + apply/consume helpers (hardcoded, not in store)
+  economy/          pure buy/sell/move over inventory + bank with positive-integer guards
+  items/            craft(inventory, recipeId) over content recipes
   quests/           Quest/DialogueNode types + one DEMO_QUEST
   audio.ts          Web Audio: master/music/sfx gains, beep SFX, single-oscillator "music"
-data/               skills/*.json (23), enemies.json (1), items.json (3), recipes.json (2)
+data/               skills/*.json (23), enemies.json (1), items.json (6), recipes.json (4)
 locales/en.json     themed skill display names + a few UI strings
 ```
 
 ## Gameplay flow as implemented
 
-1. **Main menu** → one screen per feature; no shared state between screens (each screen owns local state and is unmounted on navigation).
-2. **Play**: skills load via `import.meta.glob`. Skills whose `primitive` is in `core/puzzles/registry.ts` (mining, smithing, attack) are playable: tier config chosen by level (tier 1 <40, tier 2 40–74, tier 3 ≥75), `PuzzleCanvas` runs the puzzle (remounted per attempt via `key`), a win awards the XP of the first matching action and saves all skill XP to `localStorage`; Next/Retry starts a new seed. Every other skill shows "coming soon". In dev builds each result is logged with `{seed, config, inputs}`.
+1. **Main menu** → one screen per feature. Game data (skills XP, inventory, bank, gold, equipment) lives in the Zustand store and survives navigation and reloads; Combat, Consumables and Quests still keep local demo state. A corrupt-save banner (`role="alert"`) shows on the menu.
+2. **Play**: skills come from `core/content.ts`. Skills whose `primitive` is in `core/puzzles/registry.ts` (mining, smithing, attack) are playable. Pick an unlocked action (shows inputs, level-scaled outputs, XP), press Start (disabled without materials), `PuzzleCanvas` runs the puzzle with the config of the highest tier whose `unlockLevel` ≤ level (remounted per attempt via `key`). On a win the store consumes inputs, adds outputs and XP atomically; a loss consumes nothing. Every other skill shows "coming soon". In dev builds each result is logged with `{seed, inputs}`.
 3. **Puzzles** are pure `step` functions over serialisable state, driven at a fixed 16 ms step; the driver logs inputs per tick, and `replay` re-runs a log. Status is `playing | won | lost`.
 4. **Combat**: `resolveCombat` runs alternating attack rolls (hit chance `0.5 + (attack − enemy.defense)/100`, damage = strength, max 100 rounds). Consumables in the list add HP / +2 strength / +2 attack up front. `CombatScreen` fights a hardcoded player against `enemies[0]`.
-5. **Crafting / Economy / Consumables / Quests** screens are small demos over their core modules with hardcoded starting inventories.
+5. **Crafting** lists recipes with have/need counts (items are made by playing the skill). **Inventory & Equipment** (`EconomyScreen`) handles bank, sell (half value), equip/unequip and a shop for `buyable` items (priced at value). **Consumables / Quests** are small demos over their core modules. **Settings** includes export/import/reset of the save.
 6. **PvP hotseat**: two legacy `MinigameRunner`s on the same seed, first to report a result takes the round, first to 3 wins.
 7. **Settings**: reduced motion, colorblind palette (CSS vars), text scale, volume sliders/mutes; persisted to `skillbound.settings`.
 

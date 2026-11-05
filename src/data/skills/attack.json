@@ -45,17 +45,7 @@
     }
   ],
   "actions": [
-    {
-      "id": "strike_dummy",
-      "minLevel": 1,
-      "xp": 10,
-      "tier": 1
-    },
-    {
-      "id": "spar",
-      "minLevel": 10,
-      "xp": 25,
-      "tier": 1
-    }
+    { "id": "strike_dummy", "name": "Strike the dummy", "minLevel": 1, "xp": 10 },
+    { "id": "spar", "name": "Spar", "minLevel": 10, "xp": 25 }
   ]
 }

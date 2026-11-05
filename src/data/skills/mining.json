@@ -46,10 +46,18 @@
   ],
   "actions": [
     {
-      "id": "train",
+      "id": "mine_copper",
+      "name": "Mine copper",
       "minLevel": 1,
       "xp": 10,
-      "tier": 1
+      "outputs": [{ "item": "copper_ore", "qty": 1, "bonusEveryLevels": 25 }]
+    },
+    {
+      "id": "mine_iron",
+      "name": "Mine iron",
+      "minLevel": 15,
+      "xp": 25,
+      "outputs": [{ "item": "iron_ore", "qty": 1, "bonusEveryLevels": 30 }]
     }
   ]
 }

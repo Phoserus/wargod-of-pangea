@@ -1,5 +1,22 @@
 [
-  { "id": "ore", "name": "Ore" },
-  { "id": "bar", "name": "Bar" },
-  { "id": "sword", "name": "Sword" }
+  { "id": "copper_ore", "name": "Copper Ore", "category": "resource", "value": 4, "buyable": true },
+  { "id": "iron_ore", "name": "Iron Ore", "category": "resource", "value": 10, "buyable": true },
+  { "id": "copper_bar", "name": "Copper Bar", "category": "material", "value": 12 },
+  { "id": "iron_bar", "name": "Iron Bar", "category": "material", "value": 30 },
+  {
+    "id": "copper_sword",
+    "name": "Copper Sword",
+    "category": "weapon",
+    "value": 45,
+    "slot": "weapon",
+    "stats": { "attack": 4, "strength": 3 }
+  },
+  {
+    "id": "iron_sword",
+    "name": "Iron Sword",
+    "category": "weapon",
+    "value": 110,
+    "slot": "weapon",
+    "stats": { "attack": 8, "strength": 6 }
+  }
 ]

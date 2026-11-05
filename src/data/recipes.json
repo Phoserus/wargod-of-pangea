@@ -1,4 +1,42 @@
 [
-  { "id": "smelt", "inputs": { "ore": 2 }, "output": "bar", "outputQty": 1 },
-  { "id": "forge", "inputs": { "bar": 3 }, "output": "sword", "outputQty": 1 }
+  {
+    "id": "smelt_copper",
+    "name": "Smelt copper bar",
+    "skill": "smithing",
+    "level": 1,
+    "xp": 8,
+    "inputs": { "copper_ore": 2 },
+    "output": "copper_bar",
+    "outputQty": 1
+  },
+  {
+    "id": "forge_copper_sword",
+    "name": "Forge copper sword",
+    "skill": "smithing",
+    "level": 5,
+    "xp": 25,
+    "inputs": { "copper_bar": 3 },
+    "output": "copper_sword",
+    "outputQty": 1
+  },
+  {
+    "id": "smelt_iron",
+    "name": "Smelt iron bar",
+    "skill": "smithing",
+    "level": 15,
+    "xp": 20,
+    "inputs": { "iron_ore": 2 },
+    "output": "iron_bar",
+    "outputQty": 1
+  },
+  {
+    "id": "forge_iron_sword",
+    "name": "Forge iron sword",
+    "skill": "smithing",
+    "level": 20,
+    "xp": 60,
+    "inputs": { "iron_bar": 3 },
+    "output": "iron_sword",
+    "outputQty": 1
+  }
 ]
