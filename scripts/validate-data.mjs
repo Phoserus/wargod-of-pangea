@@ -38,6 +38,7 @@ const Item = z.object({
   category: z.enum(["resource", "material", "weapon", "armor", "food", "misc"]),
   value: z.number().int().min(0),
   buyable: z.boolean().optional(),
+  heal: qty.optional(),
   slot: z.enum(["weapon", "head", "body", "legs", "feet"]).optional(),
   stats: z.record(z.string(), z.number().int()).optional(),
 });
@@ -50,6 +51,20 @@ const Recipe = z.object({
   inputs: z.record(z.string(), qty),
   output: z.string(),
   outputQty: qty,
+});
+
+const Enemy = z.object({
+  id: z.string(),
+  name: z.string(),
+  zone: z.string(),
+  level: qty,
+  attack: qty,
+  defense: qty,
+  strength: qty,
+  health: qty,
+  xp: z.number().int().min(0),
+  coins: z.object({ min: z.number().int().min(0), max: z.number().int().min(0) }),
+  drops: z.array(z.object({ item: z.string(), chance: z.number().min(0).max(1), qty })),
 });
 
 let errors = 0;
@@ -71,7 +86,17 @@ const recipesR = z
   .safeParse(JSON.parse(fs.readFileSync("src/data/recipes.json", "utf8")));
 if (!recipesR.success) fail("recipes.json", recipesR.error.issues);
 
+const enemiesR = z
+  .array(Enemy)
+  .safeParse(JSON.parse(fs.readFileSync("src/data/enemies.json", "utf8")));
+if (!enemiesR.success) fail("enemies.json", enemiesR.error.issues);
+
 if (itemsR.success && recipesR.success) {
+  for (const e of enemiesR.success ? enemiesR.data : []) {
+    for (const d of e.drops) {
+      if (!itemsR.data.some((i) => i.id === d.item)) fail(`enemy ${e.id}: unknown drop ${d.item}`);
+    }
+  }
   const itemIds = new Set(itemsR.data.map((i) => i.id));
   const recipeIds = new Set(recipesR.data.map((r) => r.id));
   const skillIds = new Set(skills.map((s) => s.id));

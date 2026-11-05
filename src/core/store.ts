@@ -1,10 +1,24 @@
 import { create } from "zustand";
-import { ITEMS, SKILL_BY_ID, outputQuantity, sellPrice } from "./content";
+import { ITEMS, ENEMY_BY_ID, SKILL_BY_ID, outputQuantity, sellPrice } from "./content";
 import { equip, isSlot, unequip, type Equipment } from "./equipment";
 import { addItem, exchange, hasAll, isQty, removeItem, type Bag } from "./inventory";
 import { emptySave, SAVE_VERSION, type SaveData } from "./save";
 import type { Slot } from "./content";
 import { levelFromXp } from "./xp";
+import {
+  COMBAT_XP_SKILLS,
+  derivePlayerStats,
+  enemyFighter,
+  foodFromInventory,
+  playerFighter,
+  rollLoot,
+  type Loot,
+} from "./combat/player";
+import { resolveFight, type FightResult } from "./combat/resolver";
+
+export type FightReport =
+  | { ok: false; reason: string }
+  | { ok: true; result: FightResult; loot: Loot | null; xp: number; seed: number };
 
 export interface GameData {
   skills: Record<string, number>;
@@ -28,6 +42,8 @@ export interface GameStore extends GameData {
   sellItem(itemId: string, qty: number): boolean;
   moveItem(itemId: string, qty: number, from: "inventory" | "bank", to: "inventory" | "bank"): void;
   equipItem(itemId: string): boolean;
+  /** Fights from full HP using held food; a win pays loot and XP, a loss only costs the food eaten. */
+  fight(enemyId: string, seed?: number): FightReport;
   unequipSlot(slot: Slot): boolean;
   loadSave(data: SaveData): void;
   resetGame(): void;
@@ -121,6 +137,33 @@ export const useGame = create<GameStore>()((set, get) => ({
       GameData,
       typeof from | typeof to
     >);
+  },
+
+  fight(enemyId, seed = Date.now() >>> 0) {
+    const enemy = ENEMY_BY_ID[enemyId];
+    if (!enemy) return { ok: false, reason: "Unknown enemy" };
+    const g = get();
+    const stats = derivePlayerStats(g.skills, g.equipment);
+    const result = resolveFight(
+      seed,
+      playerFighter(stats),
+      enemyFighter(enemy),
+      foodFromInventory(g.inventory),
+    );
+    let inventory = g.inventory;
+    for (const [id, n] of Object.entries(result.foodUsed)) {
+      inventory = removeItem(inventory, id, n) ?? inventory;
+    }
+    if (result.outcome !== "win") {
+      set({ inventory });
+      return { ok: true, result, loot: null, xp: 0, seed };
+    }
+    const loot = rollLoot(seed, enemyId);
+    for (const [id, n] of Object.entries(loot.items)) inventory = addItem(inventory, id, n);
+    const skills = { ...g.skills };
+    for (const s of COMBAT_XP_SKILLS) skills[s] = (skills[s] ?? 0) + enemy.xp;
+    set({ inventory, skills, currency: g.currency + loot.coins });
+    return { ok: true, result, loot, xp: enemy.xp, seed };
   },
 
   equipItem(itemId) {

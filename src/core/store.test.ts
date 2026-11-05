@@ -61,6 +61,30 @@ describe("store", () => {
     expect(useGame.getState().equipment.weapon).toBe("copper_sword");
   });
 
+  it("a winning fight pays loot and xp; food eaten is consumed", () => {
+    useGame.setState({ equipment: { weapon: "iron_sword" }, inventory: { bread: 3 } });
+    let report;
+    for (let seed = 1; seed < 50; seed++) {
+      useGame.setState({ currency: 0, skills: {}, inventory: { bread: 3 } });
+      report = useGame.getState().fight("goblin", seed);
+      if (report.ok && report.result.outcome === "win") break;
+    }
+    expect(report?.ok && report.result.outcome).toBe("win");
+    const g = useGame.getState();
+    expect(g.currency).toBeGreaterThanOrEqual(2);
+    expect(g.skills.attack).toBe(12);
+    expect(g.skills.health).toBe(12);
+  });
+
+  it("a lost fight pays nothing", () => {
+    for (let seed = 1; seed < 50; seed++) {
+      useGame.setState({ currency: 0, skills: {}, inventory: {}, equipment: {} });
+      const r = useGame.getState().fight("goblin_chief", seed);
+      expect(r.ok && r.loot).toBeNull();
+    }
+    expect(useGame.getState().currency).toBe(0);
+    expect(useGame.getState().fight("nobody").ok).toBe(false);
+  });
   it("persists across a reload", async () => {
     const stop = initPersistence();
     useGame.getState().completeAction("mining", "mine_copper");

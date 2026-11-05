@@ -3,6 +3,8 @@
   { "id": "iron_ore", "name": "Iron Ore", "category": "resource", "value": 10, "buyable": true },
   { "id": "copper_bar", "name": "Copper Bar", "category": "material", "value": 12 },
   { "id": "iron_bar", "name": "Iron Bar", "category": "material", "value": 30 },
+  { "id": "goblin_tooth", "name": "Goblin Tooth", "category": "misc", "value": 8 },
+  { "id": "bread", "name": "Bread", "category": "food", "value": 6, "buyable": true, "heal": 8 },
   {
     "id": "copper_sword",
     "name": "Copper Sword",

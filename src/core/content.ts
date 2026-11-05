@@ -1,6 +1,7 @@
 import { z } from "zod";
 import itemsJson from "../data/items.json";
 import recipesJson from "../data/recipes.json";
+import enemiesJson from "../data/enemies.json";
 
 export const ITEM_CATEGORIES = ["resource", "material", "weapon", "armor", "food", "misc"] as const;
 export const SLOTS = ["weapon", "head", "body", "legs", "feet"] as const;
@@ -17,6 +18,7 @@ export const itemSchema = z
     category: z.enum(ITEM_CATEGORIES),
     value: z.number().int().min(0),
     buyable: z.boolean().optional(),
+    heal: qty.optional(),
     slot: z.enum(SLOTS).optional(),
     stats: z.partialRecord(z.enum(STATS), z.number().int()).optional(),
   })
@@ -122,9 +124,36 @@ export const SKILL_BY_ID: Record<string, GameSkill> = Object.fromEntries(
   SKILLS.map((s) => [s.id, s]),
 );
 
+export const enemySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  zone: z.string().min(1),
+  level: qty,
+  attack: qty,
+  defense: qty,
+  strength: qty,
+  health: qty,
+  xp: z.number().int().min(0),
+  coins: z.object({ min: z.number().int().min(0), max: z.number().int().min(0) }),
+  drops: z.array(z.object({ item: z.string().min(1), chance: z.number().min(0).max(1), qty })),
+});
+export type Enemy = z.infer<typeof enemySchema>;
+export const ENEMIES: Enemy[] = z.array(enemySchema).parse(enemiesJson);
+export const ENEMY_BY_ID: Record<string, Enemy> = Object.fromEntries(ENEMIES.map((e) => [e.id, e]));
+
 /** Cross-reference problems between items, recipes and skills; empty when the data is sound. */
 export function contentProblems(): string[] {
   const problems: string[] = [];
+  for (const e of ENEMIES) {
+    if (e.coins.max < e.coins.min) problems.push(`enemy ${e.id}: coins max < min`);
+    for (const d of e.drops) {
+      if (!ITEMS[d.item]) problems.push(`enemy ${e.id}: unknown drop ${d.item}`);
+    }
+  }
+  for (const i of Object.values(ITEMS)) {
+    if (i.heal !== undefined && i.category !== "food")
+      problems.push(`item ${i.id}: heal on non-food`);
+  }
   for (const r of RECIPES) {
     if (!SKILL_BY_ID[r.skill]) problems.push(`recipe ${r.id}: unknown skill ${r.skill}`);
     if (!ITEMS[r.output]) problems.push(`recipe ${r.id}: unknown output ${r.output}`);

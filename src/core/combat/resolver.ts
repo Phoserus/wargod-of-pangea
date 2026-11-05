@@ -1,66 +1,116 @@
 import { createRng } from "../rng";
-import { CONSUMABLES } from "../consumables";
 
-function applyConsumables(c: Combatant): { hp: number; strength: number; attack: number } {
-  let hp = c.hp;
-  let strength = c.strength;
-  let attack = c.attack;
-  for (const id of c.consumables ?? []) {
-    const cons = CONSUMABLES[id];
-    if (!cons) continue;
-    if (cons.type === "food") hp += cons.heal ?? 0;
-    if (cons.type === "potion" && cons.buff === "strength") strength += 2;
-    if (cons.type === "potion" && cons.buff === "attack") attack += 2;
-  }
-  return { hp, strength, attack };
-}
-
-export interface Combatant {
+export interface Fighter {
   name: string;
   attack: number;
   defense: number;
   strength: number;
-  health: number;
   hp: number;
-  consumables?: string[];
 }
 
-export interface CombatResult {
-  winner: string;
-  log: string[];
+export interface Food {
+  id: string;
+  heal: number;
+  count: number;
 }
 
-export function resolveCombat(seed: number, a: Combatant, b: Combatant): CombatResult {
+export type CombatEvent =
+  | { round: number; actor: "player" | "enemy"; kind: "hit"; amount: number }
+  | { round: number; actor: "player" | "enemy"; kind: "miss" }
+  | { round: number; actor: "player"; kind: "eat"; amount: number; item: string };
+
+export interface RoundSnapshot {
+  round: number;
+  playerHp: number;
+  enemyHp: number;
+}
+
+export interface FightResult {
+  outcome: "win" | "lose" | "draw";
+  rounds: number;
+  events: CombatEvent[];
+  /** HP after each round, for playback bars. */
+  snapshots: RoundSnapshot[];
+  foodUsed: Record<string, number>;
+  playerHp: number;
+  enemyHp: number;
+}
+
+export interface FightOptions {
+  /** Eat when HP falls to this fraction of max (or below). */
+  eatBelow?: number;
+  maxRounds?: number;
+}
+
+export function hitChance(attack: number, defense: number): number {
+  return Math.min(0.95, Math.max(0.1, 0.5 + (attack - defense) / 40));
+}
+
+function roll(rng: () => number, f: Fighter, against: Fighter): number {
+  if (rng() >= hitChance(f.attack, against.defense)) return 0;
+  return 1 + Math.floor(rng() * Math.max(1, f.strength));
+}
+
+/**
+ * Both sides act each round at the same time, so both can fall in one round (a draw, which the
+ * player treats as a loss). Eating uses the player's action for that round.
+ */
+export function resolveFight(
+  seed: number,
+  player: Fighter,
+  enemy: Fighter,
+  food: Food[] = [],
+  opts: FightOptions = {},
+): FightResult {
   const rng = createRng(seed);
-  const log: string[] = [];
-  const a2 = applyConsumables(a);
-  const b2 = applyConsumables(b);
-  let ha = a2.hp;
-  let hb = b2.hp;
-  const sa = a2.strength;
-  const sb = b2.strength;
-  const aa = a2.attack;
-  const ab = b2.attack;
+  const eatBelow = opts.eatBelow ?? 0.4;
+  const maxRounds = opts.maxRounds ?? 100;
+  const maxHp = player.hp;
+  const pantry = food.map((f) => ({ ...f })).sort((a, b) => a.heal - b.heal);
+  const foodUsed: Record<string, number> = {};
+  const events: CombatEvent[] = [];
+  const snapshots: RoundSnapshot[] = [];
+  let ph = player.hp;
+  let eh = enemy.hp;
   let round = 0;
-  while (ha > 0 && hb > 0 && round < 100) {
+
+  while (ph > 0 && eh > 0 && round < maxRounds) {
     round++;
-    const hitA = rng() < 0.5 + (aa - b.defense) / 100;
-    const hitB = rng() < 0.5 + (ab - a.defense) / 100;
-    if (hitA) {
-      const dmg = Math.max(1, sa);
-      hb -= dmg;
-      log.push(`${a.name} hits ${b.name} for ${dmg}`);
+    let pDmg = 0;
+    const meal = ph <= maxHp * eatBelow ? pantry.find((f) => f.count > 0) : undefined;
+    if (meal) {
+      meal.count--;
+      foodUsed[meal.id] = (foodUsed[meal.id] ?? 0) + 1;
+      const healed = Math.min(meal.heal, maxHp - ph);
+      ph += healed;
+      events.push({ round, actor: "player", kind: "eat", amount: healed, item: meal.id });
     } else {
-      log.push(`${a.name} misses`);
+      pDmg = roll(rng, player, enemy);
+      events.push(
+        pDmg > 0
+          ? { round, actor: "player", kind: "hit", amount: pDmg }
+          : { round, actor: "player", kind: "miss" },
+      );
     }
-    if (hb <= 0) break;
-    if (hitB) {
-      const dmg = Math.max(1, sb);
-      ha -= dmg;
-      log.push(`${b.name} hits ${a.name} for ${dmg}`);
-    } else {
-      log.push(`${b.name} misses`);
-    }
+    const eDmg = roll(rng, enemy, player);
+    events.push(
+      eDmg > 0
+        ? { round, actor: "enemy", kind: "hit", amount: eDmg }
+        : { round, actor: "enemy", kind: "miss" },
+    );
+    eh -= pDmg;
+    ph -= eDmg;
+    snapshots.push({ round, playerHp: Math.max(0, ph), enemyHp: Math.max(0, eh) });
   }
-  return { winner: ha > 0 ? a.name : b.name, log };
+
+  const outcome = ph > 0 && eh <= 0 ? "win" : ph <= 0 && eh > 0 ? "lose" : "draw";
+  return {
+    outcome,
+    rounds: round,
+    events,
+    snapshots,
+    foodUsed,
+    playerHp: Math.max(0, ph),
+    enemyHp: Math.max(0, eh),
+  };
 }

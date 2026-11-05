@@ -39,13 +39,13 @@ Problems, gaps, and improvement opportunities only. How things currently work �
 
 ## 2. Combat
 
-- 🔴 **C-1 [Opp] Combat is a toy: one hardcoded player, one enemy, one seed.** `CombatScreen` builds `{attack:10, defense:5, strength:6, hp:30}` and fights `enemies[0]`. Nothing connects to skill levels, gear, food, or the save, so the README loop "combine skills → gear → fight" has no link. Needed: `derivePlayerStats(skillXp, equipment)`, enemy tables with zones/drops, consequences (loot, XP, retry), and persistent player state.
+- ~~🔴 **C-1 [Opp] Combat is a toy: one hardcoded player, one enemy, one seed.**~~ Resolved 2026-11-04 (Phase 3): stats derive from skills and gear; Goblin Hollow with 3 enemies, loot, XP. HP is not persistent between fights.
 - 🔴 **C-2 [Opp] Consider an interactive layer on top of auto-resolve.** A log of text lines will feel flat. In-scope options: pre-fight loadout (food/potions/ability), "interventions" at HP thresholds (eat, switch stance), and a playback screen with HP bars. Keep the resolver pure and seeded.
-- 🟠 **C-3 [Gap] Missing combat model.** No gear slots, weapon speed/priority, abilities/cooldowns, damage types, or level-gated combat options (README §9–10; `combat/options.ts`, `stats.ts` don't exist). `Combatant.health` is unused. "Simultaneous turns" are actually sequential: A always strikes first and can win before B acts. Ranged/Magic have no home.
-- 🟠 **C-4 [Bug] Consumables are wrong in several ways.** Applied once at fight start (no mid-fight healing, never removed from inventory, no count limit); potion buffs are a hardcoded `+2` in the resolver; ammo/catalyst/pouch have no combat effect (M8 unmet); `CONSUMABLES` is a code constant with 3 entries.
-- 🟡 **C-5 [Bug] Balance math unclamped.** Hit chance `0.5 + (a − d)/100` can exceed 1 or go below 0; damage is a flat `strength` (no variance/armor); on the 100-round cap the "winner" is `ha > 0`, so a stalemate favours A.
-- 🟡 **C-6 [Gap] Resolver returns only `winner` + strings.** Return structured events (`{turn, actor, kind, amount, hpAfter}`) for UI, audio, and tests.
-- 🟢 **C-7 [Gap] `enemies.json` has no id/level/loot/zone and is not validated** by `validate-data` or `content-lint`.
+- ~~🟠 **C-3 [Gap] Missing combat model.**~~ Partly resolved 2026-11-04: gear stats and truly simultaneous rounds exist. Still open: weapon speed, abilities/cooldowns, damage types, ranged/magic.
+- ~~🟠 **C-4 [Bug] Consumables are wrong in several ways.**~~ Resolved 2026-11-04: food is an item with `heal`, eaten from the inventory mid-fight and consumed. Potions/ammo/catalysts are not implemented (old consumables module removed).
+- ~~🟡 **C-5 [Bug] Balance math unclamped.**~~ Resolved 2026-11-04: hit chance clamped, damage varies 1..strength, a stalemate is a draw.
+- ~~🟡 **C-6 [Gap] Resolver returns only `winner` + strings.**~~ Resolved 2026-11-04: resolver returns structured events and per-round HP snapshots.
+- ~~🟢 **C-7 [Gap] `enemies.json` has no id/level/loot/zone and is not validated**~~ Resolved 2026-11-04: enemies have id/level/zone/drops and are validated by zod (content.ts) and validate-data.
 
 ## 3. Skills & Progression
 

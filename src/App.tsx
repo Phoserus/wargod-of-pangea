@@ -8,23 +8,13 @@ import { PlayScreen } from "./PlayScreen";
 import { CombatScreen } from "./CombatScreen";
 import { CraftingScreen } from "./CraftingScreen";
 import { EconomyScreen } from "./EconomyScreen";
-import { ConsumablesScreen } from "./ConsumablesScreen";
 import { QuestsScreen } from "./QuestsScreen";
 import { PvPHotseat } from "./PvPHotseat";
 import { SaveTools } from "./SaveTools";
 import { useGame } from "./core/store";
 
 type Screen =
-  | "menu"
-  | "settings"
-  | "debug"
-  | "play"
-  | "combat"
-  | "crafting"
-  | "economy"
-  | "consumables"
-  | "quests"
-  | "pvp";
+  "menu" | "settings" | "debug" | "play" | "combat" | "crafting" | "economy" | "quests" | "pvp";
 
 const STORAGE_KEY = "skillbound.settings";
 
@@ -266,15 +256,6 @@ export function App(): React.JSX.Element {
     );
   }
 
-  if (screen === "consumables") {
-    return (
-      <div>
-        <ConsumablesScreen />
-        <button onClick={() => setScreen("menu")}>Back</button>
-      </div>
-    );
-  }
-
   if (screen === "quests") {
     return (
       <div>
@@ -309,7 +290,6 @@ export function App(): React.JSX.Element {
       <button onClick={() => setScreen("combat")}>Combat</button>
       <button onClick={() => setScreen("crafting")}>Crafting</button>
       <button onClick={() => setScreen("economy")}>Economy</button>
-      <button onClick={() => setScreen("consumables")}>Consumables</button>
       <button onClick={() => setScreen("quests")}>Quests</button>
       <button onClick={() => setScreen("pvp")}>PvP</button>
     </main>
